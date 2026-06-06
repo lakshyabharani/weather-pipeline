@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Pipeline Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0F0F0E;
+            --bg2: #161614;
+            --bg3: #1E1E1B;
+            --ink: #F0EDE6;
+            --ink2: #A09D96;
+            --ink3: #5C5A55;
+            --accent: #C8A96E;
+            --border: rgba(240, 237, 230, 0.08);
+            --green: #8FB878;
+            --blue: #6B9FD4;
+            --orange: #D4916B;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--ink);
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--green);
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.4
+            }
+        }
+
+        main {
+            padding: 32px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+        }
+
+        .card-city {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 8px;
+        }
+
+        .card-temp {
+            font-size: 48px;
+            font-weight: 300;
+            color: var(--ink);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .card-temp span {
+            font-size: 20px;
+            color: var(--ink2);
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .stat {
+            background: var(--bg2);
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ink3);
+            margin-bottom: 3px;
+        }
+
+        .stat-val {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--ink);
+        }
+
+        .card-time {
+            font-size: 11px;
+            color: var(--ink3);
+            margin-top: 12px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        select {
+            background: var(--bg3);
+            color: var(--ink);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #0F0F0E;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn-secondary {
+            background: var(--bg3);
+            color: var(--ink);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .chart-container {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--ink3);
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        .fetch-status {
+            font-size: 13px;
+            color: var(--green);
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Weather <span>Pipeline</span></div>
+        <div class="status">
+            <div class="dot"></div> Live · Auto-refreshes every hour
+        </div>
+    </header>
+
+    <main>
+        <p class="section-title">Current Conditions</p>
+        <div class="cards" id="cards">
+            <div class="loading">Loading weather data...</div>
+        </div>
+
+        <p class="section-title">Temperature History</p>
+        <div class="controls">
+            <select id="citySelect">
+                <option value="Washington DC">Washington DC</option>
+                <option value="New York">New York</option>
+                <option value="Los Angeles">Los Angeles</option>
+            </select>
+            <select id="limitSelect">
+                <option value="12">Last 12 readings</option>
+                <option value="24" selected>Last 24 readings</option>
+                <option value="48">Last 48 readings</option>
+            </select>
+            <button class="btn-secondary" onclick="loadHistory()">Load History</button>
+            <button class="btn" onclick="fetchNow()">Fetch Now</button>
+            <span class="fetch-status" id="fetchStatus">✓ Fetched successfully!</span>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title" id="chartTitle">Temperature over time — Washington DC</div>
+            <canvas id="tempChart" height="100"></canvas>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="chart-container">
+                <div class="chart-title">Humidity (%)</div>
+                <canvas id="humidityChart" height="120"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Wind Speed (mph)</div>
+                <canvas id="windChart" height="120"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        let tempChart, humidityChart, windChart;
+
+        const chartDefaults = {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: '#5C5A55', maxTicksLimit: 8 }, grid: { color: 'rgba(240,237,230,0.05)' } },
+                y: { ticks: { color: '#5C5A55' }, grid: { color: 'rgba(240,237,230,0.05)' } }
+            }
+        };
+
+        async function loadLatest() {
+            const res = await fetch(`${API}/weather/latest`);
+            const data = await res.json();
+            const container = document.getElementById('cards');
+            container.innerHTML = data.map(w => `
+      <div class="card">
+        <div class="card-city">${w.city}</div>
+        <div class="card-temp">${w.temperature}<span>°C</span></div>
+        <div class="card-desc">${w.description}</div>
+        <div class="card-stats">
+          <div class="stat"><div class="stat-label">Humidity</div><div class="stat-val">${w.humidity}%</div></div>
+          <div class="stat"><div class="stat-label">Wind</div><div class="stat-val">${w.windspeed} mph</div></div>
+        </div>
+        <div class="card-time">Last updated: ${new Date(w.fetchedAt).toLocaleString()}</div>
+      </div>
+    `).join('');
+        }
+
+        async function loadHistory() {
+            const city = document.getElementById('citySelect').value;
+            const limit = document.getElementById('limitSelect').value;
+            document.getElementById('chartTitle').textContent = `Temperature over time — ${city}`;
+
+            const res = await fetch(`${API}/weather/history?city=${encodeURIComponent(city)}&limit=${limit}`);
+            const data = await res.json();
+            const reversed = [...data].reverse();
+
+            const labels = reversed.map(d => new Date(d.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            const temps = reversed.map(d => d.temperature);
+            const humidity = reversed.map(d => d.humidity);
+            const wind = reversed.map(d => d.windspeed);
+
+            if (tempChart) tempChart.destroy();
+            if (humidityChart) humidityChart.destroy();
+            if (windChart) windChart.destroy();
+
+            tempChart = new Chart(document.getElementById('tempChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: temps,
+                        borderColor: '#C8A96E',
+                        backgroundColor: 'rgba(200,169,110,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#C8A96E'
+                    }]
+                },
+                options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, tooltip: { callbacks: { label: ctx => `${ctx.raw}°C` } } } }
+            });
+
+            humidityChart = new Chart(document.getElementById('humidityChart'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: humidity,
+                        backgroundColor: 'rgba(107,159,212,0.7)',
+                        borderRadius: 4
+                    }]
+                },
+                options: chartDefaults
+            });
+
+            windChart = new Chart(document.getElementById('windChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: wind,
+                        borderColor: '#8FB878',
+                        backgroundColor: 'rgba(143,184,120,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#8FB878'
+                    }]
+                },
+                options: chartDefaults
+            });
+        }
+
+        async function fetchNow() {
+            const btn = document.querySelector('.btn');
+            btn.textContent = 'Fetching...';
+            btn.disabled = true;
+            await fetch(`${API}/weather/fetch`, { method: 'POST' });
+            btn.textContent = 'Fetch Now';
+            btn.disabled = false;
+            const status = document.getElementById('fetchStatus');
+            status.style.display = 'inline';
+            setTimeout(() => status.style.display = 'none', 3000);
+            await loadLatest();
+            await loadHistory();
+        }
+
+        // Initial load
+        loadLatest();
+        loadHistory();
+    </script>
+</body>
+
+</html>
