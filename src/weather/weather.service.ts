@@ -29,9 +29,24 @@ const WEATHER_DESCRIPTIONS: Record<number, string> = {
 
 // Cities to track — coordinates for Open-Meteo API
 const CITIES = [
+  // North America
   { name: 'Washington DC', lat: 38.9072, lon: -77.0369 },
   { name: 'New York', lat: 40.7128, lon: -74.006 },
   { name: 'Los Angeles', lat: 34.0522, lon: -118.2437 },
+  { name: 'Chicago', lat: 41.8781, lon: -87.6298 },
+  { name: 'Toronto', lat: 43.6532, lon: -79.3832 },
+  // Europe
+  { name: 'London', lat: 51.5074, lon: -0.1278 },
+  { name: 'Paris', lat: 48.8566, lon: 2.3522 },
+  { name: 'Berlin', lat: 52.52, lon: 13.405 },
+  // Asia
+  { name: 'Tokyo', lat: 35.6762, lon: 139.6503 },
+  { name: 'Dubai', lat: 25.2048, lon: 55.2708 },
+  { name: 'Singapore', lat: 1.3521, lon: 103.8198 },
+  { name: 'Mumbai', lat: 19.076, lon: 72.8777 },
+  // Oceania & South America
+  { name: 'Sydney', lat: -33.8688, lon: 151.2093 },
+  { name: 'São Paulo', lat: -23.5505, lon: -46.6333 },
 ];
 
 @Injectable()
